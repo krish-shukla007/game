@@ -1,671 +1,585 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roulette</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-      body {
-        font-family: "Roboto Mono", monospace;
-        background: linear-gradient(135deg, #0e1217, #010408);
-        color: #d1d5db;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        margin: 0;
-        padding: 2rem;
-        box-sizing: border-box;
-      }
-
-      .game-container {
-        width: 100%;
-        max-width: 900px;
-        background-color: #1f2937;
-        border: 8px solid #374151;
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-      }
-
-      .players-list {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-      }
-
-      .player-card {
-        background-color: #374151;
-        border-radius: 10px;
-        padding: 1rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        border: 2px solid transparent;
-        transition: border-color 0.3s ease;
-      }
-
-      .player-card.current {
-        border-color: #2563eb;
-      }
-
-      .player-name {
-        font-weight: bold;
-        font-size: 1.125rem;
-      }
-
-      .player-balance {
-        font-size: 1rem;
-      }
-
-      .roulette-wheel {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 150px;
-        background-color: #111827;
-        border-radius: 10px;
-        padding: 1rem;
-        position: relative;
-        overflow: hidden;
-        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
-      }
-
-      .roulette-ball {
-        width: 20px;
-        height: 20px;
-        background-color: #e5e7eb;
-        border-radius: 50%;
-        position: absolute;
-        z-index: 10;
-        transform: translateY(0);
-        transition: transform 3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-      }
-
-      .roulette-ball.spin {
-        animation: spin-ball 3s ease-out forwards;
-      }
-
-      @keyframes spin-ball {
-        0% {
-          transform: rotate(0deg) translateY(-50px);
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background: linear-gradient(135deg, #0e1217, #010408);
+            color: #d1d5db;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
+            box-sizing: border-box;
         }
-        100% {
-          transform: rotate(1800deg) translateY(-50px);
+
+        .game-container {
+            width: 100%;
+            max-width: 900px;
+            background-color: #1f2937;
+            border: 8px solid #374151;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
-      }
 
-      .betting-area {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-      }
+        .players-list {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr); /* Default to 1 column */
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
 
-      .betting-grid {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 0.5rem;
-      }
+        @media (min-width: 640px) { /* sm breakpoint */
+            .players-list {
+                grid-template-columns: repeat(2, 1fr); /* 2 columns on small screens and up */
+            }
+        }
 
-      .color-betting-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.5rem;
-      }
+        .player-card {
+            background-color: #374151;
+            border-radius: 10px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
+        }
 
-      .bet-cell {
-        padding: 1rem;
-        border-radius: 8px;
-        font-weight: bold;
-        text-align: center;
-        cursor: pointer;
-        transition: transform 0.2s, box-shadow 0.2s;
-        position: relative;
-      }
+        .player-card.current {
+            border-color: #2563eb;
+        }
 
-      .bet-cell:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-      }
+        .player-name {
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
 
-      .bet-cell.red {
-        background-color: #b91c1c;
-      }
-      .bet-cell.black {
-        background-color: #111827;
-      }
-      .bet-cell.green {
-        background-color: #15803d;
-      }
-      .bet-cell.selected {
-        border: 3px solid #fcd34d;
-      }
+        .player-balance {
+            font-size: 1rem;
+        }
 
-      .bet-chip {
-        position: absolute;
-        bottom: 5px;
-        right: 5px;
-        background-color: #fcd34d;
-        color: #1f2937;
-        font-weight: bold;
-        padding: 4px 8px;
-        border-radius: 50%;
-        font-size: 0.8rem;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 30px;
-        height: 30px;
-      }
+        .roulette-wheel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 150px;
+            background-color: #111827;
+            border-radius: 10px;
+            padding: 1rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
 
-      .bet-chip.hidden {
-        display: none;
-      }
+        .roulette-ball {
+            width: 20px;
+            height: 20px;
+            background-color: #e5e7eb;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 10;
+            transform: translateY(0);
+            transition: transform 3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
 
-      .input-group {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-      }
+        .roulette-ball.spin {
+            animation: spin-ball 3s ease-out forwards;
+        }
 
-      .bet-input {
-        background-color: #4b5563;
-        border: none;
-        border-radius: 8px;
-        padding: 0.75rem;
-        color: white;
-        flex-grow: 1;
-      }
+        @keyframes spin-ball {
+            0% {
+                transform: rotate(0deg) translateY(-50px);
+            }
+            100% {
+                transform: rotate(1800deg) translateY(-50px);
+            }
+        }
 
-      .btn {
-        padding: 0.75rem 1.5rem;
-        border-radius: 9999px;
-        font-weight: bold;
-        text-transform: uppercase;
-        transition: all 0.2s ease-in-out;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        text-align: center;
-      }
+        .betting-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .betting-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* Default to 3 columns */
+            gap: 0.5rem;
+        }
+        
+        @media (min-width: 640px) { /* sm breakpoint */
+            .betting-grid {
+                grid-template-columns: repeat(5, 1fr); /* 5 columns on small screens and up */
+            }
+        }
 
-      .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-      }
+        .color-betting-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr); /* Default to 1 column */
+            gap: 0.5rem;
+        }
 
-      .btn:disabled {
-        background-color: #4b5563;
-        color: #6b7280;
-        cursor: not-allowed;
-        box-shadow: none;
-        transform: none;
-      }
+        @media (min-width: 640px) { /* sm breakpoint */
+            .color-betting-grid {
+                grid-template-columns: repeat(3, 1fr); /* 3 columns on small screens and up */
+            }
+        }
 
-      .btn-blue {
-        background-color: #2563eb;
-        color: #fff;
-      }
+        .bet-cell {
+            padding: 1rem;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
 
-      .btn-green {
-        background-color: #10b981;
-        color: #fff;
-      }
+        .bet-cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
 
-      #message {
-        text-align: center;
-        font-size: 1.5rem;
-        font-weight: bold;
-        min-height: 2rem;
-      }
+        .bet-cell.red { background-color: #b91c1c; }
+        .bet-cell.black { background-color: #111827; }
+        .bet-cell.green { background-color: #15803d; }
+        .bet-cell.selected { border: 3px solid #fcd34d; }
+
+        .bet-chip {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background-color: #fcd34d;
+            color: #1f2937;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 50%;
+            font-size: 0.8rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 30px;
+            height: 30px;
+        }
+
+        .bet-chip.hidden {
+            display: none;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        @media (min-width: 640px) { /* sm breakpoint */
+            .input-group {
+                flex-direction: row;
+            }
+        }
+
+        .bet-input {
+            background-color: #4b5563;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: white;
+            flex-grow: 1;
+            width: 100%;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:disabled {
+            background-color: #4b5563;
+            color: #6b7280;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .btn-blue {
+            background-color: #2563eb;
+            color: #fff;
+        }
+
+        .btn-green {
+            background-color: #10b981;
+            color: #fff;
+        }
+
+        #message {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            min-height: 2rem;
+        }
     </style>
-  </head>
-  <body
-    class="bg-gray-900 text-gray-200 flex flex-col items-center justify-center p-8"
-  >
+</head>
+<body class="bg-gray-900 text-gray-200 flex flex-col items-center justify-center p-8">
     <div class="game-container">
-      <h1 class="text-3xl sm:text-4xl text-center font-bold text-gray-50 mb-4">
-        Roulette
-      </h1>
-      <p class="text-center text-sm mb-4">
-        Place a bet on a single number (35:1) or a color (1:1).
-      </p>
+        <h1 class="text-3xl sm:text-4xl text-center font-bold text-gray-50 mb-4">Roulette</h1>
+        <p class="text-center text-sm sm:text-base mb-4">Place a bet on a single number (35:1) or a color (1:1).</p>
 
-      <!-- Player Balances -->
-      <div class="players-list" id="players-list"></div>
+        <!-- Player Balances -->
+        <div class="players-list" id="players-list"></div>
 
-      <!-- Roulette Wheel -->
-      <div class="roulette-wheel">
-        <div id="roulette-ball" class="roulette-ball hidden"></div>
-        <div id="winning-number" class="text-6xl font-bold text-gray-200">
-          ?
-        </div>
-      </div>
-
-      <!-- Betting Area -->
-      <div class="betting-area">
-        <h2 class="text-xl font-semibold mb-2">Number Bets</h2>
-        <div class="betting-grid" id="betting-grid"></div>
-
-        <h2 class="text-xl font-semibold mb-2">Color Bets</h2>
-        <div class="color-betting-grid" id="color-betting-grid">
-          <div class="bet-cell red" data-bet-type="color" data-bet-value="red">
-            <span class="bet-text">Red</span>
-            <span class="bet-chip hidden">$0</span>
-          </div>
-          <div
-            class="bet-cell black"
-            data-bet-type="color"
-            data-bet-value="black"
-          >
-            <span class="bet-text">Black</span>
-            <span class="bet-chip hidden">$0</span>
-          </div>
-          <div
-            class="bet-cell green"
-            data-bet-type="color"
-            data-bet-value="green"
-          >
-            <span class="bet-text">Green (0)</span>
-            <span class="bet-chip hidden">$0</span>
-          </div>
+        <!-- Roulette Wheel -->
+        <div class="roulette-wheel">
+            <div id="roulette-ball" class="roulette-ball hidden"></div>
+            <div id="winning-number" class="text-6xl sm:text-7xl font-bold text-gray-200">?</div>
         </div>
 
-        <div class="input-group">
-          <input
-            type="number"
-            id="bet-amount"
-            class="bet-input"
-            placeholder="Enter bet amount"
-            min="10"
-            step="10"
-          />
-          <button id="place-bet-btn" class="btn btn-blue" disabled>
-            Place Bet
-          </button>
-        </div>
+        <!-- Betting Area -->
+        <div class="betting-area">
+            <h2 class="text-xl font-semibold mb-2">Number Bets</h2>
+            <div class="betting-grid" id="betting-grid"></div>
 
-        <div class="flex justify-center gap-4">
-          <button id="spin-btn" class="btn btn-green" disabled>Spin</button>
-          <button id="new-round-btn" class="btn btn-blue">New Round</button>
-        </div>
-      </div>
+            <h2 class="text-xl font-semibold mb-2">Color Bets</h2>
+            <div class="color-betting-grid" id="color-betting-grid">
+                <div class="bet-cell red" data-bet-type="color" data-bet-value="red">
+                    <span class="bet-text">Red</span>
+                    <span class="bet-chip hidden">$0</span>
+                </div>
+                <div class="bet-cell black" data-bet-type="color" data-bet-value="black">
+                    <span class="bet-text">Black</span>
+                    <span class="bet-chip hidden">$0</span>
+                </div>
+                <div class="bet-cell green" data-bet-type="color" data-bet-value="green">
+                    <span class="bet-text">Green (0)</span>
+                    <span class="bet-chip hidden">$0</span>
+                </div>
+            </div>
 
-      <!-- Game Message -->
-      <div
-        id="message"
-        class="text-center text-red-400 font-bold text-2xl"
-      ></div>
+            <div class="input-group">
+                <input type="number" id="bet-amount" class="bet-input" placeholder="Enter bet amount" min="10" step="10">
+                <button id="place-bet-btn" class="btn btn-blue" disabled>Place Bet</button>
+            </div>
+            
+            <div class="flex justify-center gap-4">
+                <button id="spin-btn" class="btn btn-green" disabled>Spin</button>
+                <button id="new-round-btn" class="btn btn-blue">New Round</button>
+            </div>
+        </div>
+        
+        <!-- Game Message -->
+        <div id="message" class="text-center text-red-400 font-bold text-2xl"></div>
+
     </div>
 
     <script>
-      // Game state variables
-      const players = [
-        {
-          id: 0,
-          name: "You",
-          balance: 2000,
-          betAmount: 0,
-          betType: null,
-          betValue: null,
-        },
-        {
-          id: 1,
-          name: "Player 2",
-          balance: 2000,
-          betAmount: 0,
-          betType: null,
-          betValue: null,
-        },
-        {
-          id: 2,
-          name: "Player 3",
-          balance: 2000,
-          betAmount: 0,
-          betType: null,
-          betValue: null,
-        },
-        {
-          id: 3,
-          name: "Player 4",
-          balance: 2000,
-          betAmount: 0,
-          betType: null,
-          betValue: null,
-        },
-      ];
+        // Game state variables
+        const players = [
+            { id: 0, name: 'You', balance: 2000, betAmount: 0, betType: null, betValue: null },
+            { id: 1, name: 'Player 2', balance: 2000, betAmount: 0, betType: null, betValue: null },
+            { id: 2, name: 'Player 3', balance: 2000, betAmount: 0, betType: null, betValue: null },
+            { id: 3, name: 'Player 4', balance: 2000, betAmount: 0, betType: null, betValue: null }
+        ];
 
-      // The colors of the numbers on the wheel
-      const numberColors = {
-        0: "green",
-        1: "red",
-        2: "black",
-        3: "red",
-        4: "black",
-        5: "red",
-        6: "black",
-        7: "red",
-        8: "black",
-        9: "red",
-        10: "black",
-        11: "black",
-        12: "red",
-        13: "black",
-        14: "red",
-        15: "black",
-        16: "red",
-        17: "black",
-        18: "red",
-        19: "red",
-        20: "black",
-        21: "red",
-        22: "black",
-        23: "red",
-        24: "black",
-        25: "red",
-        26: "black",
-        27: "red",
-        28: "black",
-        29: "black",
-        30: "red",
-        31: "black",
-        32: "red",
-        33: "black",
-        34: "red",
-        35: "black",
-        36: "red",
-      };
+        // The colors of the numbers on the wheel
+        const numberColors = {
+            '0': 'green', '1': 'red', '2': 'black', '3': 'red', '4': 'black', '5': 'red',
+            '6': 'black', '7': 'red', '8': 'black', '9': 'red', '10': 'black', '11': 'black',
+            '12': 'red', '13': 'black', '14': 'red', '15': 'black', '16': 'red', '17': 'black',
+            '18': 'red', '19': 'red', '20': 'black', '21': 'red', '22': 'black', '23': 'red',
+            '24': 'black', '25': 'red', '26': 'black', '27': 'red', '28': 'black', '29': 'black',
+            '30': 'red', '31': 'black', '32': 'red', '33': 'black', '34': 'red', '35': 'black',
+            '36': 'red'
+        };
 
-      // DOM elements
-      const playersListEl = document.getElementById("players-list");
-      const bettingGridEl = document.getElementById("betting-grid");
-      const colorBettingGridEl = document.getElementById("color-betting-grid");
-      const betAmountInput = document.getElementById("bet-amount");
-      const placeBetBtn = document.getElementById("place-bet-btn");
-      const spinBtn = document.getElementById("spin-btn");
-      const newRoundBtn = document.getElementById("new-round-btn");
-      const messageEl = document.getElementById("message");
-      const winningNumberEl = document.getElementById("winning-number");
+        // DOM elements
+        const playersListEl = document.getElementById('players-list');
+        const bettingGridEl = document.getElementById('betting-grid');
+        const colorBettingGridEl = document.getElementById('color-betting-grid');
+        const betAmountInput = document.getElementById('bet-amount');
+        const placeBetBtn = document.getElementById('place-bet-btn');
+        const spinBtn = document.getElementById('spin-btn');
+        const newRoundBtn = document.getElementById('new-round-btn');
+        const messageEl = document.getElementById('message');
+        const winningNumberEl = document.getElementById('winning-number');
 
-      let bet = { amount: 0, type: null, value: null };
-      let isSpinning = false;
-      let selectedCell = null;
+        let bet = { amount: 0, type: null, value: null };
+        let isSpinning = false;
+        let selectedCell = null;
 
-      /**
-       * Renders the player list and their balances.
-       */
-      function renderPlayers() {
-        playersListEl.innerHTML = "";
-        players.forEach((player) => {
-          const playerCard = document.createElement("div");
-          playerCard.className = `player-card rounded-xl p-4 shadow-md ${
-            player.id === 0 ? "current" : ""
-          }`;
-          const betInfo =
-            player.betAmount > 0
-              ? `<p class="text-sm">Bet: $${player.betAmount} on ${player.betValue}</p>`
-              : "";
-          playerCard.innerHTML = `
+        /**
+         * Renders the player list and their balances.
+         */
+        function renderPlayers() {
+            playersListEl.innerHTML = '';
+            players.forEach(player => {
+                const playerCard = document.createElement('div');
+                playerCard.className = `player-card rounded-xl p-4 shadow-md ${player.id === 0 ? 'current' : ''}`;
+                const betInfo = player.betAmount > 0 ? `<p class="text-sm">Bet: $${player.betAmount} on ${player.betValue}</p>` : '';
+                playerCard.innerHTML = `
                     <div class="player-name">${player.name}</div>
                     <div class="player-balance">Balance: $${player.balance}</div>
                     ${betInfo}
                 `;
-          playersListEl.appendChild(playerCard);
-        });
-      }
+                playersListEl.appendChild(playerCard);
+            });
+        }
 
-      /**
-       * Renders the betting grid with colored numbers.
-       */
-      function renderBettingGrid() {
-        bettingGridEl.innerHTML = "";
-        const numbers = Object.keys(numberColors);
-        numbers.sort((a, b) => parseInt(a) - parseInt(b));
+        /**
+         * Renders the betting grid with colored numbers.
+         */
+        function renderBettingGrid() {
+            bettingGridEl.innerHTML = '';
+            const numbers = Object.keys(numberColors);
+            numbers.sort((a, b) => parseInt(a) - parseInt(b));
 
-        numbers.forEach((number) => {
-          const numberCell = document.createElement("div");
-          numberCell.classList.add("bet-cell", numberColors[number]);
-          numberCell.innerHTML = `<span class="bet-text">${number}</span><span class="bet-chip hidden">$0</span>`;
-          numberCell.dataset.betType = "number";
-          numberCell.dataset.betValue = number;
+            numbers.forEach(number => {
+                const numberCell = document.createElement('div');
+                numberCell.classList.add('bet-cell', numberColors[number]);
+                numberCell.innerHTML = `<span class="bet-text">${number}</span><span class="bet-chip hidden">$0</span>`;
+                numberCell.dataset.betType = 'number';
+                numberCell.dataset.betValue = number;
 
-          // Add click listener to select a number
-          numberCell.addEventListener("click", () => {
+                // Add click listener to select a number
+                numberCell.addEventListener('click', () => {
+                    if (isSpinning) return;
+                    selectBetCell(numberCell);
+                });
+                bettingGridEl.appendChild(numberCell);
+            });
+
+            // Add click listeners for color bets
+            const colorCells = colorBettingGridEl.querySelectorAll('.bet-cell');
+            colorCells.forEach(cell => {
+                cell.addEventListener('click', () => {
+                    if (isSpinning) return;
+                    selectBetCell(cell);
+                });
+            });
+        }
+
+        /**
+         * Handles selecting a bet cell.
+         * @param {HTMLElement} cell The cell that was clicked.
+         */
+        function selectBetCell(cell) {
+            if (selectedCell) {
+                selectedCell.classList.remove('selected');
+            }
+            cell.classList.add('selected');
+            selectedCell = cell;
+            bet.type = selectedCell.dataset.betType;
+            bet.value = selectedCell.dataset.betValue;
+            placeBetBtn.disabled = betAmountInput.value <= 0;
+        }
+
+
+        /**
+         * Handles placing a bet.
+         */
+        function placeBet() {
+            const amount = parseInt(betAmountInput.value);
+
+            if (isNaN(amount) || amount <= 0 || amount > players[0].balance) {
+                messageEl.textContent = "Invalid bet amount.";
+                return;
+            }
+            if (bet.type === null || bet.value === null) {
+                messageEl.textContent = "Please select a number or color to bet on.";
+                return;
+            }
+
+            bet.amount = amount;
+            players[0].betAmount = amount;
+            players[0].betType = bet.type;
+            players[0].betValue = bet.value;
+            players[0].balance -= amount;
+
+            const chipEl = selectedCell.querySelector('.bet-chip');
+            if(chipEl) {
+                chipEl.textContent = `$${amount}`;
+                chipEl.classList.remove('hidden');
+            }
+            messageEl.textContent = `Bet of $${amount} placed on ${bet.value}.`;
+            updateUI();
+
+            spinBtn.disabled = false;
+            placeBetBtn.disabled = true;
+            betAmountInput.disabled = true;
+            bettingGridEl.style.pointerEvents = 'none';
+            colorBettingGridEl.style.pointerEvents = 'none';
+        }
+
+        /**
+         * Simulates the spin of the roulette wheel.
+         */
+        function spinWheel() {
             if (isSpinning) return;
-            selectBetCell(numberCell);
-          });
-          bettingGridEl.appendChild(numberCell);
+            isSpinning = true;
+            spinBtn.disabled = true;
+            
+            // Player 2, 3, 4 automatically place a bet.
+            for (let i = 1; i < players.length; i++) {
+                const autoBetAmount = Math.floor(Math.random() * 50) * 10 + 10;
+                const betChoice = Math.random();
+
+                if (players[i].balance >= autoBetAmount) {
+                    players[i].betAmount = autoBetAmount;
+                    if (betChoice < 0.5) { // 50% chance to bet on number
+                        players[i].betType = 'number';
+                        players[i].betValue = Math.floor(Math.random() * 37).toString();
+                    } else { // 50% chance to bet on a color
+                        players[i].betType = 'color';
+                        const colors = ['red', 'black', 'green'];
+                        players[i].betValue = colors[Math.floor(Math.random() * 3)];
+                    }
+                    players[i].balance -= autoBetAmount;
+                }
+            }
+
+            messageEl.textContent = 'Spinning...';
+            winningNumberEl.textContent = '?';
+            
+            // Simulate ball animation
+            const ballEl = document.getElementById('roulette-ball');
+            ballEl.classList.remove('hidden');
+            
+            // Randomly determine winning number
+            const winningNumber = Math.floor(Math.random() * 37).toString();
+
+            // Hide the ball after the animation is over
+            setTimeout(() => {
+                ballEl.classList.add('hidden');
+                checkResults(winningNumber);
+                isSpinning = false;
+            }, 3000); // Animation duration
+        }
+
+        /**
+         * Checks the results of the spin and updates balances.
+         * @param {string} winningNumber The number the ball landed on.
+         */
+        function checkResults(winningNumber) {
+            winningNumberEl.textContent = winningNumber;
+            winningNumberEl.style.color = numberColors[winningNumber] === 'red' ? '#dc2626' : numberColors[winningNumber] === 'black' ? '#000000' : '#15803d';
+            
+            let message = '';
+            const winningColor = numberColors[winningNumber];
+
+            for (const player of players) {
+                if (player.betAmount > 0) {
+                    let winnings = 0;
+                    let isWinner = false;
+
+                    if (player.betType === 'number' && player.betValue === winningNumber) {
+                        winnings = player.betAmount * 35;
+                        isWinner = true;
+                    } else if (player.betType === 'color' && player.betValue === winningColor) {
+                        winnings = player.betAmount * 1;
+                        isWinner = true;
+                    }
+
+                    if (isWinner) {
+                        player.balance += winnings + player.betAmount;
+                        if (player.id === 0) {
+                            message = `You win! You won $${winnings}.`;
+                        }
+                    } else {
+                        if (player.id === 0 && !message) {
+                             message = `You lose. The winning number was ${winningNumber} (${winningColor}).`;
+                        }
+                    }
+                }
+                player.betAmount = 0;
+                player.betType = null;
+                player.betValue = null;
+            }
+
+            if (!message) {
+                message = `The winning number is ${winningNumber} (${winningColor}). No one won.`;
+            }
+
+            messageEl.textContent = message;
+            newRoundBtn.disabled = false;
+            updateUI();
+        }
+
+        /**
+         * Resets the game for a new round.
+         */
+        function newRound() {
+            messageEl.textContent = "Place your bet!";
+            betAmountInput.value = '';
+            bettingGridEl.style.pointerEvents = 'auto';
+            colorBettingGridEl.style.pointerEvents = 'auto';
+            spinBtn.disabled = true;
+            newRoundBtn.disabled = true;
+            placeBetBtn.disabled = true;
+            bet.amount = 0;
+            bet.type = null;
+            bet.value = null;
+            
+            if (selectedCell) {
+                selectedCell.classList.remove('selected');
+                selectedCell = null;
+            }
+
+            const allBetChips = document.querySelectorAll('.bet-chip');
+            allBetChips.forEach(chip => chip.classList.add('hidden'));
+            
+            winningNumberEl.textContent = '?';
+            winningNumberEl.style.color = 'inherit';
+
+            betAmountInput.disabled = false;
+            updateUI();
+        }
+
+        /**
+         * Updates all dynamic UI elements.
+         */
+        function updateUI() {
+            renderPlayers();
+        }
+
+        // Event listeners
+        placeBetBtn.addEventListener('click', placeBet);
+        spinBtn.addEventListener('click', spinWheel);
+        newRoundBtn.addEventListener('click', newRound);
+        betAmountInput.addEventListener('input', () => {
+            placeBetBtn.disabled = !selectedCell || betAmountInput.value <= 0;
         });
 
-        // Add click listeners for color bets
-        const colorCells = colorBettingGridEl.querySelectorAll(".bet-cell");
-        colorCells.forEach((cell) => {
-          cell.addEventListener("click", () => {
-            if (isSpinning) return;
-            selectBetCell(cell);
-          });
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPlayers();
+            renderBettingGrid();
+            newRound();
         });
-      }
 
-      /**
-       * Handles selecting a bet cell.
-       * @param {HTMLElement} cell The cell that was clicked.
-       */
-      function selectBetCell(cell) {
-        if (selectedCell) {
-          selectedCell.classList.remove("selected");
-        }
-        cell.classList.add("selected");
-        selectedCell = cell;
-        bet.type = selectedCell.dataset.betType;
-        bet.value = selectedCell.dataset.betValue;
-        placeBetBtn.disabled = betAmountInput.value <= 0;
-      }
-
-      /**
-       * Handles placing a bet.
-       */
-      function placeBet() {
-        const amount = parseInt(betAmountInput.value);
-
-        if (isNaN(amount) || amount <= 0 || amount > players[0].balance) {
-          messageEl.textContent = "Invalid bet amount.";
-          return;
-        }
-        if (bet.type === null || bet.value === null) {
-          messageEl.textContent = "Please select a number or color to bet on.";
-          return;
-        }
-
-        bet.amount = amount;
-        players[0].betAmount = amount;
-        players[0].betType = bet.type;
-        players[0].betValue = bet.value;
-        players[0].balance -= amount;
-
-        const chipEl = selectedCell.querySelector(".bet-chip");
-        if (chipEl) {
-          chipEl.textContent = `$${amount}`;
-          chipEl.classList.remove("hidden");
-        }
-        messageEl.textContent = `Bet of $${amount} placed on ${bet.value}.`;
-        updateUI();
-
-        spinBtn.disabled = false;
-        placeBetBtn.disabled = true;
-        betAmountInput.disabled = true;
-        bettingGridEl.style.pointerEvents = "none";
-        colorBettingGridEl.style.pointerEvents = "none";
-      }
-
-      /**
-       * Simulates the spin of the roulette wheel.
-       */
-      function spinWheel() {
-        if (isSpinning) return;
-        isSpinning = true;
-        spinBtn.disabled = true;
-
-        // Player 2, 3, 4 automatically place a bet.
-        for (let i = 1; i < players.length; i++) {
-          const autoBetAmount = Math.floor(Math.random() * 50) * 10 + 10;
-          const betChoice = Math.random();
-
-          if (players[i].balance >= autoBetAmount) {
-            players[i].betAmount = autoBetAmount;
-            if (betChoice < 0.5) {
-              // 50% chance to bet on number
-              players[i].betType = "number";
-              players[i].betValue = Math.floor(Math.random() * 37).toString();
-            } else {
-              // 50% chance to bet on a color
-              players[i].betType = "color";
-              const colors = ["red", "black", "green"];
-              players[i].betValue = colors[Math.floor(Math.random() * 3)];
-            }
-            players[i].balance -= autoBetAmount;
-          }
-        }
-
-        messageEl.textContent = "Spinning...";
-        winningNumberEl.textContent = "?";
-
-        // Simulate ball animation
-        const ballEl = document.getElementById("roulette-ball");
-        ballEl.classList.remove("hidden");
-
-        // Randomly determine winning number
-        const winningNumber = Math.floor(Math.random() * 37).toString();
-
-        // Hide the ball after the animation is over
-        setTimeout(() => {
-          ballEl.classList.add("hidden");
-          checkResults(winningNumber);
-          isSpinning = false;
-        }, 3000); // Animation duration
-      }
-
-      /**
-       * Checks the results of the spin and updates balances.
-       * @param {string} winningNumber The number the ball landed on.
-       */
-      function checkResults(winningNumber) {
-        winningNumberEl.textContent = winningNumber;
-        winningNumberEl.style.color =
-          numberColors[winningNumber] === "red"
-            ? "#dc2626"
-            : numberColors[winningNumber] === "black"
-            ? "#000000"
-            : "#15803d";
-
-        let message = "";
-        const winningColor = numberColors[winningNumber];
-
-        for (const player of players) {
-          if (player.betAmount > 0) {
-            let winnings = 0;
-            let isWinner = false;
-
-            if (
-              player.betType === "number" &&
-              player.betValue === winningNumber
-            ) {
-              winnings = player.betAmount * 35;
-              isWinner = true;
-            } else if (
-              player.betType === "color" &&
-              player.betValue === winningColor
-            ) {
-              winnings = player.betAmount * 1;
-              isWinner = true;
-            }
-
-            if (isWinner) {
-              player.balance += winnings + player.betAmount;
-              if (player.id === 0) {
-                message = `You win! You won $${winnings}.`;
-              }
-            } else {
-              if (player.id === 0 && !message) {
-                message = `You lose. The winning number was ${winningNumber} (${winningColor}).`;
-              }
-            }
-          }
-          player.betAmount = 0;
-          player.betType = null;
-          player.betValue = null;
-        }
-
-        if (!message) {
-          message = `The winning number is ${winningNumber} (${winningColor}). No one won.`;
-        }
-
-        messageEl.textContent = message;
-        newRoundBtn.disabled = false;
-        updateUI();
-      }
-
-      /**
-       * Resets the game for a new round.
-       */
-      function newRound() {
-        messageEl.textContent = "Place your bet!";
-        betAmountInput.value = "";
-        bettingGridEl.style.pointerEvents = "auto";
-        colorBettingGridEl.style.pointerEvents = "auto";
-        spinBtn.disabled = true;
-        newRoundBtn.disabled = true;
-        placeBetBtn.disabled = true;
-        bet.amount = 0;
-        bet.type = null;
-        bet.value = null;
-
-        if (selectedCell) {
-          selectedCell.classList.remove("selected");
-          selectedCell = null;
-        }
-
-        const allBetChips = document.querySelectorAll(".bet-chip");
-        allBetChips.forEach((chip) => chip.classList.add("hidden"));
-
-        winningNumberEl.textContent = "?";
-        winningNumberEl.style.color = "inherit";
-
-        betAmountInput.disabled = false;
-        updateUI();
-      }
-
-      /**
-       * Updates all dynamic UI elements.
-       */
-      function updateUI() {
-        renderPlayers();
-      }
-
-      // Event listeners
-      placeBetBtn.addEventListener("click", placeBet);
-      spinBtn.addEventListener("click", spinWheel);
-      newRoundBtn.addEventListener("click", newRound);
-      betAmountInput.addEventListener("input", () => {
-        placeBetBtn.disabled = !selectedCell || betAmountInput.value <= 0;
-      });
-
-      // Initial setup
-      document.addEventListener("DOMContentLoaded", () => {
-        renderPlayers();
-        renderBettingGrid();
-        newRound();
-      });
     </script>
-  </body>
+</body>
 </html>
